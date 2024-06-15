@@ -13,45 +13,56 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AuthData, getAuth, getAuthOptions } from 'home-assistant-js-websocket';
 import { useSearchParams } from "react-router-dom";
+import { useState } from 'react';
 
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
+async function getAuthLocal(data: string): Promise<void> {
+  const authOptions: getAuthOptions = {
+        
+    async loadTokens() {
+      try {
+        return JSON.parse(localStorage.hassTokens);
+      } catch (err) {
+        return undefined;
+      }
+    },
+    saveTokens: (tokens:AuthData | null) => {
+      localStorage.hassTokens = JSON.stringify(tokens);
+    },
+    
+  };
+  authOptions.hassUrl = data;
+  authOptions.redirectUrl = "http://localhost:5173/auth"
+  const auth = await getAuth(authOptions);
+  if (auth) {
+    alert(auth.accessToken);
+  }
+}
+
 export default function ConnectToHomeAssistant() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>)  => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     console.log(data.get("ip"));
+    const ip = data.get('ip')?.toString()||"";
     (async () => {
+        await getAuthLocal(ip);
 
-      const authOptions: getAuthOptions = {
-        
-        async loadTokens() {
-          try {
-            return JSON.parse(localStorage.hassTokens);
-          } catch (err) {
-            return undefined;
-          }
-        },
-        saveTokens: (tokens:AuthData | null) => {
-          localStorage.hassTokens = JSON.stringify(tokens);
-        },
-        
-      };
-      authOptions.hassUrl = data.get('ip')?.toString();
-      const auth = await getAuth(authOptions);
-      if (auth) {
-        alert(auth.accessToken);
-      }
     })();
     //getAuth();
   };
 
   const [searchParams, setSearchParams] = useSearchParams();
   const state = searchParams.get("state");
+  const [access_token, set_access_token] = useState("");
+
+  
+
   if (state) {
-    
+  
     //window.location.href = "http://localhost:5173";
   }
   return (
@@ -100,6 +111,7 @@ export default function ConnectToHomeAssistant() {
         </Box>
         <Typography>
           State: {state}
+          Access Token: {access_token}
         </Typography>
       </Container>
     </ThemeProvider>

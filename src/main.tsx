@@ -4,6 +4,7 @@ import App from './App.tsx'
 import './index.css'
 import { StyledEngineProvider } from '@mui/material/styles';
 import {RouterProvider, createBrowserRouter } from 'react-router-dom';
+import Auth from './Auth.tsx';
 
 const router = createBrowserRouter([
   {
@@ -11,8 +12,8 @@ const router = createBrowserRouter([
     element: <App />,
   },
   {
-    path: "/:boo/:moo/:loo",
-    element: <App />,
+    path: "/auth",
+    element: <Auth/>,
   },  
 ]);
 
